@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SeriesFormRequest;
+use App\Models\Episodio;
 use App\Models\Serie;
+use App\Models\Temporada;
+use App\Services\CriadorDeSerie;
+use App\Services\RemovedorDeSerie;
 use Illuminate\Http\Request;
 
 
-class SeriesController extends Controller
+class SeriesController extends Controller 
 {
     public function index(request $request)
     {
@@ -27,37 +31,41 @@ class SeriesController extends Controller
         return view('series.create');
     }
 
-    public function store(SeriesFormRequest $request)
+    public function store(SeriesFormRequest $request, CriadorDeSerie $criadorDeSerie)
     {
+        $serie = $criadorDeSerie->criarSerie(
+            $request->nome,
+            $request->qtd_temporadas,
+            $request->ep_por_temporada);
         
-        $serie = Serie::create([$request-> $request -> nome]);
-        $qtdTemporadas = $request->qtd_temporadas;
-        for ($i = 1; $i <= $request->qtd_temporadas; $i++) {
-            $temporada = $serie->temporadas()->create(['numero' => $i]);
-
-            for ($j = 1; $j <= $request->ep_por_temporada; $j++){
-                $episodio = $temporada->episodio()->create(['numero' => $j]);
-            };
-        }
+        
         $request->session()
         ->flash(
             'mensagem',
-            "A série {$serie->nome} foi criada com sucesso, sua id é {$serie->id}"
+            "A série {$serie->nome} e suas temporadas e episodios criados com sucesso, sua id é {$serie->id}"
         );
 
         return redirect ('/series');
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request, RemovedorDeSerie $removedorDeSerie)
     {
-        Serie::destroy($request->id);
-        
+
+        $nomeSerie = $removedorDeSerie->removerSerie($request->id);
         $request->session()
         ->flash(
             'mensagem',
-            "A série foi removida com sucesso"
+            "A série {$nomeSerie} foi removida com sucesso"
         );
 
         return redirect ('/series');
+    }
+
+    public function editaNome ($id, Request $request)
+    {   
+        $novoNome = $request -> nome;
+        $serie = Serie::find($id);
+        $serie->nome = $novoNome;
+        $serie->save();
     }
 }

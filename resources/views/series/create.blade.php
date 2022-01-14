@@ -5,18 +5,10 @@
 @endsection
 
 @section('conteudo')
-@if($errors->any())
-        <div class="alert alert-danger">
-        <ul>
-            @foreach($errors->all() as $error)
-            <li>{{$error}}</li>
-            @endforeach
-            {{header('Refresh:1')}}
-        </ul>
-        </div>
-@endif
 
-    <form method="POST">
+@include('error',['errors'=> $errors])
+
+    <form method="get">
         @csrf
     <div class="row">
     <div class="col col-8">
